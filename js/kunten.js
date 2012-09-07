@@ -17,10 +17,12 @@ function(){
 		var pitch = font_size * 1.5;
 
 		context.font = font_size + 'px ' + font_name;
-		context.textAlign = 'center';
+		context.textAlign = 'right';
 		context.textBaseline = 'top';
 
 		this.get = function(){ return context; };
+		this.w = function(){ return w; };
+		this.h = function(){ return h; };
 
 		this.fillText = function(text,x,y){
 			$.each(
@@ -31,6 +33,13 @@ function(){
 		};
 	};
 
+	var KuntenDrawer = function(context_wrap){
+		var w = context_wrap.w();
+		this.draw = function(text){
+			context_wrap.fillText(text, w, 0)
+		};
+	};
+
 	var init_canvas_scale = function(context){
 		var w = parseInt(jcanvas_kun.css('width'));
 		var h = parseInt(jcanvas_kun.css('height'));
@@ -38,26 +47,23 @@ function(){
 		jcanvas_kun.attr('height', h);
 	};
 
-	var draw_test = function(context_wrap){
-		var context = context_wrap.get();
-		context.beginPath();
-		context.moveTo(0,0);
-		context.lineTo(50,100);
-		context.moveTo(50,0);
-		context.lineTo(0,100);
-		context.stroke();
-		context_wrap.fillText('あいうえお',50,0);
-	};
-
 	var draw_kunten = function(){
 		var src = jtext_src.val();
 		init_canvas_scale();
 		var context = new ContextWrapper(canvas_kun);
-		draw_test(context);
 	};
 
 	$('#btn_draw').click(
 		function(){
 			draw_kunten();
 		});
+
+	var draw_test = function(){
+		init_canvas_scale();
+		var context_wrap = new ContextWrapper(canvas_kun);
+		var drawer = new KuntenDrawer(context_wrap);
+		drawer.draw('平へい—定ていス海かい内だいヲ');
+	};
+
+	draw_test();
 });
