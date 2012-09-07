@@ -12,11 +12,8 @@ function(){
 		var context = canvas.getContext('2d');
 		var w = canvas.width;
 		var h = canvas.height;
-		var font_size = 48;
 		var font_name = 'ＭＳ 明朝';
-		var pitch = font_size * 1.5;
 
-		context.font = font_size + 'px ' + font_name;
 		context.textAlign = 'right';
 		context.textBaseline = 'top';
 
@@ -24,7 +21,9 @@ function(){
 		this.w = function(){ return w; };
 		this.h = function(){ return h; };
 
-		this.fillText = function(text,x,y){
+		this.fill_text = function(text,x,y,size,pitch){
+			pitch = pitch || size;
+			context.font = size + 'px ' + font_name;
 			$.each(
 				text,
 				function(i,t){
@@ -33,10 +32,63 @@ function(){
 		};
 	};
 
-	var KuntenDrawer = function(context_wrap){
-		var w = context_wrap.w();
+	var KuntenDrawer = function(canvas){
+		var font_size = 48;
+		var small_size = font_size / 2;
+		var pitch = font_size * 2;
+		var context = new ContextWrapper(canvas, font_size);
+		var w = context.w();
+		var re_hiragana = /[ぁ-ゖ]/;
+		var re_katakana = /[ァ-ヺ]/;
+		var KANJI = 0, HIRAGANA = 1, KATAKANA = 2, UNDEF = -1;
+		var get_token = function(text){
+			var arr = [];
+			var s = '';
+			var type = UNDEF;
+			$.each(
+				text,
+				function(i, t){
+					var cur_type;
+					if(re_hiragana.test(t)){ cur_type = HIRAGANA; }
+					else if(re_katakana.test(t)){ cur_type = KATAKANA; }
+					else cur_type = KANJI;
+					if(cur_type != type){
+						if(s != ''){
+							arr.push({type:type, text:s});
+						}
+						type = cur_type;
+						s = t;
+					} else {
+						s += t;
+					}
+				});
+			arr.push({type:type, text:s});
+			return arr;
+		};
 		this.draw = function(text){
-			context_wrap.fillText(text, w, 0)
+			var x = w - font_size;
+			var y = 0, next_y = 0;
+			var arr = get_token(text);
+			$.each(
+				arr,
+				function(i, token){
+					var t = token.text;
+					switch(token.type){
+					case KANJI:
+						y = next_y;
+						context.fill_text(t, x, y, font_size, pitch);
+						next_y = y + t.length * pitch;
+						break;
+					case HIRAGANA:
+						context.fill_text(t, x+small_size, y, small_size);
+						break;
+					case KATAKANA:
+						context.fill_text(t, x, y+font_size, small_size);
+						break;
+					default:
+						console.log('type error');
+					}
+				});
 		};
 	};
 
@@ -48,9 +100,9 @@ function(){
 	};
 
 	var draw_kunten = function(){
-		var src = jtext_src.val();
 		init_canvas_scale();
-		var context = new ContextWrapper(canvas_kun);
+		var drawer = new KuntenDrawer(canvas_kun);
+		drawer.draw(jtext_src.val());
 	};
 
 	$('#btn_draw').click(
@@ -60,9 +112,8 @@ function(){
 
 	var draw_test = function(){
 		init_canvas_scale();
-		var context_wrap = new ContextWrapper(canvas_kun);
-		var drawer = new KuntenDrawer(context_wrap);
-		drawer.draw('平へい—定ていス海かい内だいヲ');
+		var drawer = new KuntenDrawer(canvas_kun);
+		drawer.draw('平へい定ていス海かい内だいヲ');
 	};
 
 	draw_test();
