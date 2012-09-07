@@ -52,7 +52,7 @@ function(){
 					if(re_hiragana.test(t)){ cur_type = HIRAGANA; }
 					else if(re_katakana.test(t)){ cur_type = KATAKANA; }
 					else cur_type = KANJI;
-					if(cur_type != type){
+					if(type == KANJI || cur_type != type){
 						if(s != ''){
 							arr.push({type:type, text:s});
 						}
