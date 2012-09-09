@@ -3,3 +3,12 @@
 	height: 600px;
 	border: 1px solid black;
 }
+
+.controls {
+	margin-bottom: 1em;
+}
+
+#kunten_src {
+	width: 20em;
+	height: 8em;
+}
