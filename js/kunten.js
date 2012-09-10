@@ -25,7 +25,6 @@ function(){
 
 	var parse = function(str){
 		var re_kana = /[ぁ-ゖァ-ヺ]/;
-		//var re_kanji = /[\u3400-\u9fff]/;
 		var re_hyphen = /[-－]/;
 		var re_kaeri_sep = /[_＿]/;
 		var current_frame = undefined;
@@ -81,10 +80,16 @@ function(){
 			context.lineTo(x, y+l);
 			context.stroke();
 		};
+		this.on_scale = function(x_scale, y_scale, callback){
+			context.scale(x_scale, y_scale);
+			callback();
+			context.scale(1.0/x_scale, 1.0/y_scale);
+		};
 	};
 
 	var KuntenDrawer = function(context, font_size, small_size, y_pitch){
 		var re_katakana = /^[ァ-ヺ]+$/;
+		var re_reten = /レ/;
 		this.draw_base = function(t, x, y){
 			context.fill_text(t, x, y, font_size, font_size);
 		};
@@ -93,7 +98,13 @@ function(){
 			context.fill_text(t, x+small_size, y, small_size, small_size);
 		};
 		this.draw_kaeri = function(t, x, y){
-			context.fill_text(t, x-small_size, y+font_size, small_size, small_size/2);
+			var y_scale = 0.6;
+			context.on_scale(
+				1.0, y_scale,
+				function(){
+					context.fill_text(t, x-small_size, (y+font_size)/y_scale, small_size, small_size);
+				}
+			);
 		};
 		this.draw_hyphen = function(x, y){
 			var padding = y_pitch - font_size;
